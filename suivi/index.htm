@@ -4,131 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suivi Évolution Physique</title>
-    <link rel="manifest" href="manifest.json">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-        input, button { margin: 5px; padding: 8px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; }
-        th { background: #333; color: white; }
-        canvas { max-width: 100%; margin-top: 20px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <button onclick="clearSiteData()">Clear Site Data</button>
     <h2>Suivi Évolution Physique</h2>
-    <input type="date" id="date">
-    <input type="number" id="age" placeholder="Âge (ans)">
-    <input type="number" id="taille" placeholder="Taille (cm)">
-    <input type="number" id="poids" placeholder="Poids (kg)">
-    <input type="number" id="masseGrasse" placeholder="Masse grasse (%)">
-    <input type="number" id="masseMusculaire" placeholder="Masse musculaire (%)">
-    <input type="number" id="masseOs" placeholder="Masse osseuse (kg)">
-    <button onclick="ajouterDonnee()">Ajouter</button>
     
-    <h3>Évolution sur 30 jours</h3>
-    <canvas id="graphique"></canvas>
+    <div id="formulaire"></div>
+    <div id="tableau"></div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Poids</th>
-                <th>Masse Grasse</th>
-                <th>Masse Musculaire</th>
-                <th>Masse Osseuse</th>
-                <th>MB</th>
-                <th>Âge Métabolique</th>
-            </tr>
-        </thead>
-        <tbody id="historique"></tbody>
-    </table>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("date").value = new Date().toISOString().split("T")[0];
-            chargerDonnees();
-        });
+    <script src="script.js"></script>
+    <script src="utils.js"></script>
 
-        function calculerMB(poids, taille, age) {
-            return 10 * poids + 6.25 * taille - 5 * age + 5; // Formule de Mifflin-St Jeor (homme)
-        }
-
-        function calculerAgeMetabolique(MB, age) {
-            const MB_moyen = 1700; // Moyenne MB homme
-            return Math.round((MB / MB_moyen) * age);
-        }
-
-        function ajouterDonnee() {
-            const date = document.getElementById("date").value;
-            const age = parseInt(document.getElementById("age").value);
-            const taille = parseInt(document.getElementById("taille").value);
-            const poids = parseFloat(document.getElementById("poids").value);
-            const masseGrasse = parseFloat(document.getElementById("masseGrasse").value);
-            const masseMusculaire = parseFloat(document.getElementById("masseMusculaire").value);
-            const masseOs = parseFloat(document.getElementById("masseOs").value);
-
-            if (!date || !age || !taille || !poids || !masseGrasse || !masseMusculaire || !masseOs) {
-                return alert("Remplis tous les champs");
-            }
-
-            const MB = calculerMB(poids, taille, age);
-            const ageMetabolique = calculerAgeMetabolique(MB, age);
-
-            const donnees = JSON.parse(localStorage.getItem("evolution")) || [];
-            donnees.push({ date, poids, masseGrasse, masseMusculaire, masseOs, MB, ageMetabolique });
-            localStorage.setItem("evolution", JSON.stringify(donnees));
-
-            chargerDonnees();
-        }
-
-        function chargerDonnees() {
-            const donnees = JSON.parse(localStorage.getItem("evolution")) || [];
-            const historique = document.getElementById("historique");
-            historique.innerHTML = donnees.map(d => `
-                <tr>
-                    <td>${d.date}</td>
-                    <td>${d.poids} kg</td>
-                    <td>${d.masseGrasse} %</td>
-                    <td>${d.masseMusculaire} %</td>
-                    <td>${d.masseOs} kg</td>
-                    <td>${Math.round(d.MB)} kcal</td>
-                    <td>${d.ageMetabolique} ans</td>
-                </tr>
-            `).join("");
-
-            afficherGraphique(donnees);
-        }
-
-        function afficherGraphique(donnees) {
-            const ctx = document.getElementById("graphique").getContext("2d");
-            const labels = donnees.map(d => d.date);
-            const poidsData = donnees.map(d => d.poids);
-            const mbData = donnees.map(d => d.MB);
-
-            if (window.myChart) window.myChart.destroy();
-
-            window.myChart = new Chart(ctx, {
-                type: "line",
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: "Poids (kg)",
-                            data: poidsData,
-                            borderColor: "blue",
-                            fill: false
-                        },
-                        {
-                            label: "Métabolisme de Base (kcal)",
-                            data: mbData,
-                            borderColor: "red",
-                            fill: false
-                        }
-                    ]
-                }
-            });
-        }
-    </script>
 </body>
 </html>

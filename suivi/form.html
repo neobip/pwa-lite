@@ -1,0 +1,24 @@
+<div id="initialSetup">
+    <input type="date" id="dateNaissance" placeholder="Date de naissance">
+    <input type="number" id="taille" placeholder="Taille (cm)">
+    <button onclick="enregistrerInfos()">Enregistrer</button>
+</div>
+
+<div id="dataInput" style="display:none;">
+    <input type="date" id="date">
+    <input type="number" id="poids" placeholder="Poids (kg)">
+    <input type="number" id="masseGrasse" placeholder="Masse grasse (%)">
+    <input type="number" id="masseMusculaire" placeholder="Masse musculaire (%)">
+    <input type="number" id="masseOs" placeholder="Masse osseuse (kg)">
+    <input type="number" id="tbw" placeholder="TBW (%)">
+    
+    <select id="niveauActivite">
+        <option value="1.2">Sédentaire (pas d'exercice)</option>
+        <option value="1.375">Légèrement actif</option>
+        <option value="1.55">Modérément actif</option>
+        <option value="1.725">Très actif</option>
+        <option value="1.9">Super actif</option>
+    </select>
+    
+    <button onclick="ajouterDonnee()">Ajouter</button>
+</div>

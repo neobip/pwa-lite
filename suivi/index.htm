@@ -16,24 +16,34 @@
 </head>
 <body>
     <h2>Suivi Évolution Physique</h2>
-    <input type="date" id="date">
-    <input type="date" id="dateNaissance" placeholder="Date de naissance">
-    <input type="number" id="age" placeholder="Âge (ans)" disabled>
-    <input type="number" id="taille" placeholder="Taille (cm)">
-    <input type="number" id="poids" placeholder="Poids (kg)">
-    <input type="number" id="masseGrasse" placeholder="Masse grasse (%)">
-    <input type="number" id="masseMusculaire" placeholder="Masse musculaire (%)">
-    <input type="number" id="masseOs" placeholder="Masse osseuse (kg)">
-    <input type="number" id="tbw" placeholder="TBW (%)">
-    <select id="niveauActivite">
-        <option value="1.2">Sédentaire (pas d'exercice)</option>
-        <option value="1.375">Légèrement actif</option>
-        <option value="1.55">Modérément actif</option>
-        <option value="1.725">Très actif</option>
-        <option value="1.9">Super actif</option>
-    </select>
-    <button onclick="ajouterDonnee()">Ajouter</button>
     
+    <div id="initialSetup">
+        <input type="date" id="dateNaissance" placeholder="Date de naissance">
+        <input type="number" id="taille" placeholder="Taille (cm)">
+        <button onclick="enregistrerInfos()">Enregistrer</button>
+    </div>
+    
+    <div id="dataInput" style="display:none;">
+        <input type="date" id="date">
+        <input type="number" id="poids" placeholder="Poids (kg)">
+        <input type="number" id="masseGrasse" placeholder="Masse grasse (%)">
+        <input type="number" id="masseMusculaire" placeholder="Masse musculaire (%)">
+        <input type="number" id="masseOs" placeholder="Masse osseuse (kg)">
+        <input type="number" id="tbw" placeholder="TBW (%)">
+        
+        <select id="niveauActivite">
+            <option value="1.2">Sédentaire (pas d'exercice)</option>
+            <option value="1.375">Légèrement actif</option>
+            <option value="1.55">Modérément actif</option>
+            <option value="1.725">Très actif</option>
+            <option value="1.9">Super actif</option>
+        </select>
+        
+        <button onclick="ajouterDonnee()">Ajouter</button>
+    </div>
+
+    <button onclick="clearSiteData()">Clear Site Data</button>
+
     <h3>Évolution sur 30 jours</h3>
     <canvas id="graphique"></canvas>
 
@@ -61,7 +71,20 @@
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("date").value = new Date().toISOString().split("T")[0];
             chargerDonnees();
+            afficherFormulaire();
         });
+
+        function enregistrerInfos() {
+            const dateNaissance = document.getElementById("dateNaissance").value;
+            const taille = parseInt(document.getElementById("taille").value);
+            if (!dateNaissance || !taille) {
+                return alert("Veuillez remplir tous les champs.");
+            }
+            localStorage.setItem("dateNaissance", dateNaissance);
+            localStorage.setItem("taille", taille);
+            document.getElementById("initialSetup").style.display = "none";
+            document.getElementById("dataInput").style.display = "block";
+        }
 
         // Calculer l'IMC
         function calculerIMC(poids, taille) {
@@ -93,9 +116,9 @@
         // Ajouter une entrée
         function ajouterDonnee() {
             const date = document.getElementById("date").value;
-            const dateNaissance = document.getElementById("dateNaissance").value;
+            const dateNaissance = localStorage.getItem("dateNaissance");
             const age = calculerAge(dateNaissance);
-            const taille = parseInt(document.getElementById("taille").value);
+            const taille = parseInt(localStorage.getItem("taille"));
             const poids = parseFloat(document.getElementById("poids").value);
             const masseGrasse = parseFloat(document.getElementById("masseGrasse").value);
             const masseMusculaire = parseFloat(document.getElementById("masseMusculaire").value);
@@ -103,8 +126,8 @@
             const tbw = parseFloat(document.getElementById("tbw").value);
             const niveauActivite = parseFloat(document.getElementById("niveauActivite").value);
 
-            if (!date || !dateNaissance || !taille || !poids || !masseGrasse || !masseMusculaire || !masseOs || !tbw) {
-                return alert("Remplis tous les champs");
+            if (!date || !poids || !masseGrasse || !masseMusculaire || !masseOs || !tbw) {
+                return alert("Veuillez remplir tous les champs.");
             }
 
             const MB = calculerMB(poids, taille, age);
@@ -112,8 +135,7 @@
             const TDEE = calculerTDEE(MB, niveauActivite);
             const ratioMuscleGraisse = calculerRatioMuscleGraisse(masseMusculaire, masseGrasse);
             const ageMetabolique = calculerAgeMetabolique(MB, age);
-            
-            // Calories à consommer (perdre ou prendre du muscle)
+
             const caloriesConsommer = TDEE + 500;  // Pour prendre du muscle
             const caloriesSecher = TDEE - 500;  // Pour sécher
 
@@ -189,6 +211,24 @@
                     ]
                 }
             });
+        }
+
+        // Clear site data
+        function clearSiteData() {
+            localStorage.clear();
+            alert("Les données ont été réinitialisées.");
+            window.location.reload();
+        }
+
+        // Afficher le formulaire si la date de naissance et la taille sont stockées
+        function afficherFormulaire() {
+            const dateNaissance = localStorage.getItem("dateNaissance");
+            const taille = localStorage.getItem("taille");
+
+            if (dateNaissance && taille) {
+                document.getElementById("initialSetup").style.display = "none";
+                document.getElementById("dataInput").style.display = "block";
+            }
         }
     </script>
 </body>

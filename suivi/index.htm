@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suivi Évolution Physique</title>
-    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
@@ -18,12 +17,21 @@
 <body>
     <h2>Suivi Évolution Physique</h2>
     <input type="date" id="date">
-    <input type="number" id="age" placeholder="Âge (ans)">
+    <input type="date" id="dateNaissance" placeholder="Date de naissance">
+    <input type="number" id="age" placeholder="Âge (ans)" disabled>
     <input type="number" id="taille" placeholder="Taille (cm)">
     <input type="number" id="poids" placeholder="Poids (kg)">
     <input type="number" id="masseGrasse" placeholder="Masse grasse (%)">
     <input type="number" id="masseMusculaire" placeholder="Masse musculaire (%)">
     <input type="number" id="masseOs" placeholder="Masse osseuse (kg)">
+    <input type="number" id="tbw" placeholder="TBW (%)">
+    <select id="niveauActivite">
+        <option value="1.2">Sédentaire (pas d'exercice)</option>
+        <option value="1.375">Légèrement actif</option>
+        <option value="1.55">Modérément actif</option>
+        <option value="1.725">Très actif</option>
+        <option value="1.9">Super actif</option>
+    </select>
     <button onclick="ajouterDonnee()">Ajouter</button>
     
     <h3>Évolution sur 30 jours</h3>
@@ -37,8 +45,13 @@
                 <th>Masse Grasse</th>
                 <th>Masse Musculaire</th>
                 <th>Masse Osseuse</th>
+                <th>TBW</th>
+                <th>IMC</th>
+                <th>Ratio Muscles / Graisse</th>
                 <th>MB</th>
+                <th>Dépense Calorique (TDEE)</th>
                 <th>Âge Métabolique</th>
+                <th>Calories à Consommer</th>
             </tr>
         </thead>
         <tbody id="historique"></tbody>
@@ -50,38 +63,80 @@
             chargerDonnees();
         });
 
+        // Calculer l'IMC
+        function calculerIMC(poids, taille) {
+            taille = taille / 100;  // Convertir taille en m
+            return (poids / (taille * taille)).toFixed(2);
+        }
+
+        // Calculer la Dépense Calorique Journalière (TDEE)
+        function calculerTDEE(MB, niveauActivite) {
+            return MB * niveauActivite;
+        }
+
+        // Calculer le Métabolisme de Base (MB)
         function calculerMB(poids, taille, age) {
             return 10 * poids + 6.25 * taille - 5 * age + 5; // Formule de Mifflin-St Jeor (homme)
         }
 
+        // Calculer l'Âge Métabolique
         function calculerAgeMetabolique(MB, age) {
             const MB_moyen = 1700; // Moyenne MB homme
             return Math.round((MB / MB_moyen) * age);
         }
 
+        // Calculer le Ratio Muscles / Graisse
+        function calculerRatioMuscleGraisse(masseMusculaire, masseGrasse) {
+            return (masseMusculaire / masseGrasse).toFixed(2);
+        }
+
+        // Ajouter une entrée
         function ajouterDonnee() {
             const date = document.getElementById("date").value;
-            const age = parseInt(document.getElementById("age").value);
+            const dateNaissance = document.getElementById("dateNaissance").value;
+            const age = calculerAge(dateNaissance);
             const taille = parseInt(document.getElementById("taille").value);
             const poids = parseFloat(document.getElementById("poids").value);
             const masseGrasse = parseFloat(document.getElementById("masseGrasse").value);
             const masseMusculaire = parseFloat(document.getElementById("masseMusculaire").value);
             const masseOs = parseFloat(document.getElementById("masseOs").value);
+            const tbw = parseFloat(document.getElementById("tbw").value);
+            const niveauActivite = parseFloat(document.getElementById("niveauActivite").value);
 
-            if (!date || !age || !taille || !poids || !masseGrasse || !masseMusculaire || !masseOs) {
+            if (!date || !dateNaissance || !taille || !poids || !masseGrasse || !masseMusculaire || !masseOs || !tbw) {
                 return alert("Remplis tous les champs");
             }
 
             const MB = calculerMB(poids, taille, age);
+            const IMC = calculerIMC(poids, taille);
+            const TDEE = calculerTDEE(MB, niveauActivite);
+            const ratioMuscleGraisse = calculerRatioMuscleGraisse(masseMusculaire, masseGrasse);
             const ageMetabolique = calculerAgeMetabolique(MB, age);
+            
+            // Calories à consommer (perdre ou prendre du muscle)
+            const caloriesConsommer = TDEE + 500;  // Pour prendre du muscle
+            const caloriesSecher = TDEE - 500;  // Pour sécher
 
             const donnees = JSON.parse(localStorage.getItem("evolution")) || [];
-            donnees.push({ date, poids, masseGrasse, masseMusculaire, masseOs, MB, ageMetabolique });
+            donnees.push({ date, poids, masseGrasse, masseMusculaire, masseOs, tbw, IMC, ratioMuscleGraisse, MB, TDEE, ageMetabolique, caloriesConsommer, caloriesSecher });
             localStorage.setItem("evolution", JSON.stringify(donnees));
 
             chargerDonnees();
         }
 
+        // Calculer l'âge à partir de la date de naissance
+        function calculerAge(dateNaissance) {
+            const dateNaiss = new Date(dateNaissance);
+            const aujourd'hui = new Date();
+            const age = aujourd'hui.getFullYear() - dateNaiss.getFullYear();
+            const mois = aujourd'hui.getMonth() - dateNaiss.getMonth();
+            if (mois < 0 || (mois === 0 && aujourd'hui.getDate() < dateNaiss.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        // Charger les données depuis localStorage
         function chargerDonnees() {
             const donnees = JSON.parse(localStorage.getItem("evolution")) || [];
             const historique = document.getElementById("historique");
@@ -92,14 +147,20 @@
                     <td>${d.masseGrasse} %</td>
                     <td>${d.masseMusculaire} %</td>
                     <td>${d.masseOs} kg</td>
+                    <td>${d.tbw} %</td>
+                    <td>${d.IMC}</td>
+                    <td>${d.ratioMuscleGraisse}</td>
                     <td>${Math.round(d.MB)} kcal</td>
+                    <td>${Math.round(d.TDEE)} kcal</td>
                     <td>${d.ageMetabolique} ans</td>
+                    <td>Prendre : ${d.caloriesConsommer} kcal, Sécher : ${d.caloriesSecher} kcal</td>
                 </tr>
             `).join("");
 
             afficherGraphique(donnees);
         }
 
+        // Affichage du graphique
         function afficherGraphique(donnees) {
             const ctx = document.getElementById("graphique").getContext("2d");
             const labels = donnees.map(d => d.date);

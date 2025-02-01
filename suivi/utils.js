@@ -123,3 +123,54 @@ function calculerCaloriesAConsommer(tdee) {
     }
     return tdee;
 }
+
+function afficherGraphique() {
+    // Extraire les données d'ageMetabolique et des dates
+    const dates = historique.map(item => item.date);
+    const ageMetaboliqueData = historique.map(item => item.ageMetabolique);
+
+    // Configuration du graphique
+    const ctx = document.getElementById("ageMetaboliqueChart").getContext("2d");
+
+    const chart = new Chart(ctx, {
+        type: "line", // Type de graphique, ici une courbe linéaire
+        data: {
+            labels: dates, // Dates sur l'axe X
+            datasets: [{
+                label: "Âge Métabolique",
+                data: ageMetaboliqueData, // Valeurs d'âge métabolique sur l'axe Y
+                borderColor: "rgba(75, 192, 192, 1)", // Couleur de la ligne
+                backgroundColor: "rgba(75, 192, 192, 0.2)", // Couleur de fond sous la ligne
+                fill: true,
+                tension: 0.4 // Courbe fluide
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: "top",
+                },
+                tooltip: {
+                    mode: "index",
+                    intersect: false,
+                },
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Date"
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: "Âge Métabolique"
+                    }
+                }
+            }
+        }
+    });
+}
+afficherGraphique();

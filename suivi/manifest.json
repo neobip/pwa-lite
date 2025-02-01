@@ -1,8 +1,8 @@
 {
     "name": "Suivi Physique",
     "short_name": "Suivi",
-    "id": "pwa-lite/suivi/",
-    "start_url": "pwa-lite/suivi/",
+    "id": "/pwa-lite/suivi/",
+    "start_url": "/pwa-lite/suivi/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#333333"

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi Évolution Physique</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        input, button { margin: 5px; padding: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; }
+        th { background: #333; color: white; }
+    </style>
+</head>
+<body>
+    <h2>Suivi Évolution Physique</h2>
+    <input type="date" id="date">
+    <input type="number" id="poids" placeholder="Poids (kg)">
+    <input type="number" id="masseGrasse" placeholder="Masse grasse (%)">
+    <input type="number" id="masseMusculaire" placeholder="Masse musculaire (%)">
+    <button onclick="ajouterDonnee()">Ajouter</button>
+    <table>
+        <thead>
+            <tr><th>Date</th><th>Poids</th><th>Masse Grasse</th><th>Masse Musculaire</th></tr>
+        </thead>
+        <tbody id="historique"></tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", chargerDonnees);
+
+        function ajouterDonnee() {
+            const date = document.getElementById("date").value;
+            const poids = document.getElementById("poids").value;
+            const masseGrasse = document.getElementById("masseGrasse").value;
+            const masseMusculaire = document.getElementById("masseMusculaire").value;
+
+            if (!date || !poids || !masseGrasse || !masseMusculaire) return alert("Remplis tous les champs");
+
+            const donnees = JSON.parse(localStorage.getItem("evolution")) || [];
+            donnees.push({ date, poids, masseGrasse, masseMusculaire });
+            localStorage.setItem("evolution", JSON.stringify(donnees));
+
+            chargerDonnees();
+        }
+
+        function chargerDonnees() {
+            const donnees = JSON.parse(localStorage.getItem("evolution")) || [];
+            const historique = document.getElementById("historique");
+            historique.innerHTML = donnees.map(d => `
+                <tr>
+                    <td>${d.date}</td>
+                    <td>${d.poids} kg</td>
+                    <td>${d.masseGrasse} %</td>
+                    <td>${d.masseMusculaire} %</td>
+                </tr>
+            `).join("");
+        }
+    </script>
+</body>
+</html>

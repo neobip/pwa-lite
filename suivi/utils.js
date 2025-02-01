@@ -23,16 +23,26 @@ function calculerTDEE(mb, niveauActivite) {
     return (mb * niveauActivite).toFixed(2);
 }
 
-// Fonction pour calculer l'âge métabolique
 function calculerAgeMetabolique(mb) {
+    // Estimation de l'âge métabolique par rapport au MB
+    let ageMetabolique = 0;
+
+    // Cette estimation peut être affinée avec des données plus précises
+    // Formule linéaire simple, à ajuster selon des études :
     if (mb >= 1800) {
-        return "Jeune";
+        ageMetabolique = (mb - 1800) / 10 + 20; // Hypothèse pour les jeunes
     } else if (mb >= 1500) {
-        return "Moyenne";
+        ageMetabolique = (mb - 1500) / 10 + 30; // Hypothèse pour les adultes
     } else {
-        return "Plus vieux";
+        ageMetabolique = (mb - 1300) / 10 + 40; // Hypothèse pour les personnes plus âgées
     }
+
+    // Limiter l'âge à une valeur raisonnable (par exemple, 80 ans max)
+    // ageMetabolique = Math.min(ageMetabolique, 80);
+
+    return ageMetabolique.toFixed(0); // Retourne l'âge métabolique estimé, arrondi à l'entier
 }
+
 
 // Fonction pour ajouter une nouvelle donnée dans le tableau
 function ajouterDonnee() {
